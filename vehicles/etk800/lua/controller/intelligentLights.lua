@@ -1,4 +1,4 @@
---Author: Nikkeryge
+--Author: Niclas Ryge
 --Some people like to say "don'T yOu DaRE uSe MY Code OR ElSe", but I am not a flaming narcissist.
 --If you learn or gather anything from this, please take all you can. Never make something others have already done for you.
 --Although, I'd like a shoutout if this turns out useful to you so I know if I helped someone :)
@@ -9,7 +9,7 @@ M.type = "auxiliary"
 --Do this once to save on a few resources.
 local fixedLog = math.log(1.5)
 
---could be done with an array if more lights require it -   currentValue[target] ?
+
 local currentValueLeft = 0
 local currentValueRight = 0
 local currentValueHighLeft = 0
@@ -21,8 +21,18 @@ function math.clamp(low, n, high) return math.min(math.max(n, low), high) end
 
 
 -- returns distance between player and target
+-- - Includes square root so is computationally heavy. Use getSquaredDistance.
 local function getDistance(player, target)
   return math.sqrt((target.x - player.x)^2 + (target.y - player.y)^2 + (target.z - player.z)^2)
+end 
+
+-- Identical to getDistance, only squared.
+-- Far less computationally heavy.
+-- - Argument 1: object 1 - Vec3
+-- - Argument 2: object 2 - Vec3
+-- - Returns squared distance as number
+local function getSquaredDistance(player, target)
+  return (target.x - player.x)^2 + (target.y - player.y)^2 + (target.z - player.z)^2
 end 
 
 
@@ -51,13 +61,49 @@ local function takeStep(targetValue, target, dt, currentValue, clampMin, clampMa
   end
 end
 
---Determines if a light should be off based on the the value of the light plus the width (lOff, rOff)
---And an angle to determine whether the angle is inside the lightsource or not.
+--Determines if a light should be off based on the the value of the light plus the width (lOff, rOff),
+-- And an angle to determine whether the angle is inside the lightsource or not.
 local function determineOff(value,angle,abs, target, lOff, rOff) 
   if value+lOff > angle and value-rOff < angle and abs <= 40 then
     return 1
   else 
     return 0
+  end
+end
+
+-- Returns whether a ray hits the intended object, or is blocked prematurely.
+local function rayIntersection(pos, dir, vehObj)
+  local center = obj:getObjectCenterPosition(vehObj.id)
+
+  local dirVec, dirVecUp = obj:getObjectDirectionVector(vehObj.id), obj:getObjectDirectionVectorUp(vehObj.id)
+  local dirVecSide = vec3()
+
+  dirVecSide:setCross(dirVecUp, dirVec)
+  dirVecSide:normalize()
+  dirVecSide:setScaled(obj:getObjectInitialWidth(vehObj.id)*0.5)
+  dirVec:setScaled(obj:getObjectInitialLength(vehObj.id)*0.5)
+  dirVecUp:setScaled(obj:getObjectInitialHeight(vehObj.id)*0.5)
+
+                                      --Inefficient
+  local rayLen = obj:castRayStatic(pos, dir, math.sqrt(vehObj.distance))
+  --print(rayLen)
+  --print(pos)
+
+
+  -- returns: min distance and max distance of the OBB, not whether or not we are actually hitting the object.
+  local resultmin, resultmax = intersectsRay_OBB(pos, dir, center, dirVec, dirVecSide, dirVecUp)
+  
+  --return math.min(rayLen, math.max(resultmin, 0)) -- ~= math.huge
+
+  -- I am the king of cringe edgecases.
+  -- Let us assume that it is impossible for the ray (which is wrong) to never be shorter than the bounding box ray hit 
+  -- as we are aiming for the vehicle center. Under that assumption; If the ray is shorter, it must be because we are hitting something
+  -- unintended. Thusly, we create:
+
+  if rayLen < (math.max(resultmin, 0)) then
+    return false
+  else 
+    return true
   end
 end
 
@@ -115,12 +161,14 @@ local function updateGFX(dt)
         
           objPos = v.pos
           
-          playerPos = mapmgr.objects[objectId].pos
+          --Dont use maybe.
+          --playerPos = mapmgr.objects[objectId].pos
           playerDir = mapmgr.objects[objectId].dirVec 
+          playerPos = obj:getObjectCenterPosition(objectId)
 
-          distance = getDistance(mapmgr.objects[objectId].pos, v.pos)
+          distance = getSquaredDistance(mapmgr.objects[objectId].pos, v.pos)
 
-          if distance < 180 then
+          if distance < 180^2 then
             
             directionToTarget = vec3(objPos.x - playerPos.x, objPos.y - playerPos.y, objPos.z - playerPos.z)
             directionToTarget:normalize()
@@ -139,6 +187,9 @@ local function updateGFX(dt)
               --Add angle to the vehicle's table
               v.angle = angle
               v.absAngle = absAngle
+              v.id = objId
+              v.distance = distance
+              v.targDir = directionToTarget
               objectArr[v] = distance
 
             end
@@ -156,20 +207,24 @@ local function updateGFX(dt)
         end
       end
       
-      leftOff = 0
-      rightOff = 0
-      penis = 0
+      local leftOff, rightOff, counter, visCounter  = 0,0,0,0
+
       for v, distance in pairs(objectArr) do
 
+        local frontpos = playerPos + (playerDir*(obj:getObjectInitialLength(objectId)*0.5))
 
-        if v.angle < 40 and v.angle > -40 and v.absAngle <= 40 and v.absAngle >=0 then
-
+        
+        if v.angle < 40 and v.angle > -40 and v.absAngle <= 40 and v.absAngle >=0 and rayIntersection(frontpos, v.targDir, v) then
+          visCounter = visCounter + 1
           --Only process the closest vehicle, because I haven't come up with a way to prioritize targets yet.
-          if v == closest then
+          
+
+          if v == closest then           
+
             if v.angle > -10 and v.angle < 15 and v == closest then
             
               hiTargetRight = v.angle
-              hiOffsetRight = 15
+              hiOffsetRight = 5
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetRight = v.angle
@@ -179,7 +234,7 @@ local function updateGFX(dt)
             if v.angle < 10 and v.angle > -15 and v == closest then
 
               hiTargetLeft = v.angle
-              hiOffsetLeft = 15
+              hiOffsetLeft = 5
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetLeft = v.angle
@@ -191,14 +246,14 @@ local function updateGFX(dt)
             currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, overrideRight)
           end
           
-          --Override to turn off lights when object is inside the cone
-          leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 17, 14)
-          rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 14, 17)
+          --Override to turn off lights when object is inside the cone (Not dynamic enough)
+        --leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 17, 14)
+        --rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 14, 17)
 
         end
 
         --sshhh
-        penis = penis + 1
+        counter = counter + 1
 
       end 
 
@@ -214,7 +269,7 @@ local function updateGFX(dt)
         electrics.values[rightHigh] = 0
       end
 
-      print("Cars processed: " .. penis )
+      print("Cars processed: " .. counter .." - of which visible: " .. visCounter )
     
     else
       offset = 0

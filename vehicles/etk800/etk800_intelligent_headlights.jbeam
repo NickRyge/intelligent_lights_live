@@ -3,22 +3,22 @@
     "information":{
         "authors":"jfef",
         "name":"LED intelligent Right Headlight",
-        "value":350,
+        "value":350
     },
     "slotType" : "etk800_headlight_R",
     "flexbodies": [
          ["mesh", "[group]:", "nonFlexMaterials"],
          ["etk800_headlightframe_R", ["etk800_headlight_R"]],
-         {"deformGroup":"headlightglass_R_break", "deformMaterialBase":"etk800_glass", "deformMaterialDamaged":"etk800_glass_dmg"}
-         ["etk800_headlightglass_R", ["etk800_headlight_R"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound3", "deformVolume":0.4}],
+         {"deformGroup":"headlightglass_R_break", "deformMaterialBase":"etk800_glass", "deformMaterialDamaged":"etk800_glass_dmg"},
+         ["etk800_headlightglass_R", ["etk800_headlight_R"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound3", "deformVolume":0.4}],
          {"deformGroup":""},
-         {"deformGroup":"headlightglass_R_break", "deformMaterialBase":"etk800_lights", "deformMaterialDamaged":"etk800_lights_dmg"}
+         {"deformGroup":"headlightglass_R_break", "deformMaterialBase":"etk800_lights", "deformMaterialDamaged":"etk800_lights_dmg"},
          ["etk800_headlight_R", ["etk800_headlight_R"]],
-         {"deformGroup":""},
+         {"deformGroup":""}
     ],
 	    "controller": [
         ["fileName"],
-        ["intelligentLights"],
+        ["intelligentLights"]
     ],
 	
     "props": [
@@ -33,9 +33,9 @@
             "lightCastShadows":true,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.1,
-            "cookieName":"vehicles/etk800/etk800_headlight.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight.dds",
             "texSize":128,
-            "shadowSoftness":0.4,
+            "shadowSoftness":0.4
         },
         //low beams
         ["cornerRight"    , "SPOTLIGHT"        , "he4r", "he3r", "he2r", 
@@ -51,18 +51,18 @@
             "lightRange":200,
             "lightColor":{"r":200, "g":200, "b":255, "a":255},
             "lightAttenuation":{"x":0, "y":1, "z":1},
-            "lightCastShadows":false,
+            "lightCastShadows":true,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.3,
-            "cookieName":"vehicles/etk800/etk800_headlight_high_test.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight_high_test.dds",
             "texSize":128,
-            "shadowSoftness":0.5,
+            "shadowSoftness":0.5
         },
         //high beams
         ["rightHigh" ,         "SPOTLIGHT"        , "he4r", "he3r", "he2r", 
 		{"x":159.2, "y":187, "z":-36} , 
 		{"x":0, "y":0, "z":1}    , 
-		{"x":0, "y":0, "z":0}, -360, 360, 0, 1, {"baseTranslation":
+		{"x":0, "y":0, "z":0}, -360, 360, 360, 1, {"baseTranslation":
 		{"x":0.0, "y":0.48, "z":0.055},
 		"deformGroup":"headlightglass_R_break"}],
 
@@ -77,9 +77,9 @@
             "lightCastShadows":false,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.3,
-            "cookieName":"vehicles/etk800/etk800_headlight_high_right_side.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight_high_right_side.dds",
             "texSize":128,
-            "shadowSoftness":0.5,
+            "shadowSoftness":0.5
         },
 
         ["rightHighOFF" ,         "SPOTLIGHT"        ,  "he4r", "he3r", "he2r", 
@@ -99,9 +99,9 @@
             "lightAttenuation":{"x":0, "y":1, "z":1},
             "lightCastShadows":false,
             "flareName":"vehicleBrakeLightFlare",
-            "flareScale":0.05,
+            "flareScale":0.05
         },
-        ["signal_R"    , "SPOTLIGHT"        , "he3r", "he4r", "he1r", {"x":-20, "y":0, "z":-30} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.2, "z":-0.04},"deformGroup":"headlightglass_R_break"}],
+        ["signal_R"    , "SPOTLIGHT"        , "he3r", "he4r", "he1r", {"x":-20, "y":0, "z":-30} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.2, "z":-0.04},"deformGroup":"headlightglass_R_break"}]
      ],
     "nodes": [
          ["id", "posX", "posY", "posZ"],
@@ -119,7 +119,7 @@
          ["he4r",-0.78, -1.88, 0.68],
          //{"selfCollision":false}
          ["he5r",-0.60, -1.76, 0.72],
-         {"group":""},
+         {"group":""}
     ],
 
     "beams": [
@@ -182,7 +182,7 @@
           ["he5r","h4rr"],
           {"optional":false},
           {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
-          {"deformLimitExpansion":1.1},
+          {"deformLimitExpansion":1.1}
     ],
     "triangles": [
             ["id1:","id2:","id3:"],
@@ -199,34 +199,34 @@
             ["he3r","he5r","he1r"],
             ["he4r","he5r","he3r"],
             {"triangleType":"NORMALTYPE"},
-            {"group":""},
-    ],
+            {"group":""}
+    ]
 },
 "etk800_headlight_L_ILED": {
     "information":{
         "authors":"jfef",
         "name":"LED intelligent Left Headlight",
-        "value":350,
-    }
+        "value":350
+    },
     "slotType" : "etk800_headlight_L",
     "flexbodies": [
          ["mesh", "[group]:", "nonFlexMaterials"],
          ["etk800_headlightframe_L", ["etk800_headlight_L"]],
-         {"deformGroup":"headlightglass_L_break", "deformMaterialBase":"etk800_glass", "deformMaterialDamaged":"etk800_glass_dmg"}
-         ["etk800_headlightglass_L", ["etk800_headlight_L"],[]{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound4", "deformVolume":0.6}],
+         {"deformGroup":"headlightglass_L_break", "deformMaterialBase":"etk800_glass", "deformMaterialDamaged":"etk800_glass_dmg"},
+         ["etk800_headlightglass_L", ["etk800_headlight_L"],[],{"deformSound":"event:>Destruction>Vehicle>Glass>glassbreaksound4", "deformVolume":0.6}],
          {"deformGroup":""},
-         {"deformGroup":"headlightglass_L_break", "deformMaterialBase":"etk800_lights", "deformMaterialDamaged":"etk800_lights_dmg"}
+         {"deformGroup":"headlightglass_L_break", "deformMaterialBase":"etk800_lights", "deformMaterialDamaged":"etk800_lights_dmg"},
          ["etk800_headlight_L", ["etk800_headlight_L"]],
-         {"deformGroup":""},
+         {"deformGroup":""}
     ],
 	
-		"controller": [
-        ["fileName"],
-        ["intelligentLights"],
-    ],
+   //	"controller": [
+   //     ["fileName"],
+   //     ["intelligentLights"]
+   // ],
 	
     "props": [
-        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"]
+        ["func"      , "mesh"              , "idRef:", "idX:", "idY:"            , "baseRotation"        , "rotation"                 , "translation"        , "min", "max", "offset", "multiplier"],
         {
             "lightInnerAngle":0,
             "lightOuterAngle":90,
@@ -237,9 +237,9 @@
             "lightCastShadows":true,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.1,
-            "cookieName":"vehicles/etk800/etk800_headlight.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight.dds",
             "texSize":128,
-            "shadowSoftness":0.4,
+            "shadowSoftness":0.4
         },
         //low beams angled right slightly to avoid blinding oncoming traffic
         ["cornerLeft"    , "SPOTLIGHT"        , "he4l", "he3l", "he2l", 
@@ -255,12 +255,12 @@
             "lightRange":200,
             "lightColor":{"r":200, "g":200, "b":255, "a":255},
             "lightAttenuation":{"x":0, "y":1, "z":1},
-            "lightCastShadows":false,
+            "lightCastShadows":true,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.3,
-            "cookieName":"vehicles/etk800/etk800_headlight_high_test.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight_high_test.dds",
             "texSize":128,
-            "shadowSoftness":0.5,
+            "shadowSoftness":0.5
         },
         //high beams
         ["leftHigh" ,         "SPOTLIGHT"        , "he4l", "he3l", "he2l", 
@@ -281,9 +281,9 @@
             "lightCastShadows":false,
             "flareName":"vehicleHeadLightFlare",
             "flareScale":0.3,
-            "cookieName":"vehicles/etk800/etk800_headlight_high_left_side.dds"
+            "cookieName":"vehicles/etk800/etk800_headlight_high_left_side.dds",
             "texSize":128,
-            "shadowSoftness":0.5,
+            "shadowSoftness":0.5
         },
 
         ["leftHighOFF" ,         "SPOTLIGHT"        , "he4l", "he3l", "he2l", 
@@ -294,17 +294,17 @@
 		"deformGroup":"headlightglass_L_break"}],
         //signal
         {
-            "lightInnerAngle":0
-            "lightOuterAngle":120
-            "lightBrightness":0.08
-            "lightRange":10
-            "lightColor":{"r":255, "g":255, "b":0, "a":255}
-            "lightAttenuation":{"x":0, "y":1, "z":1}
-            "lightCastShadows":false
-            "flareName":"vehicleBrakeLightFlare"
+            "lightInnerAngle":0,
+            "lightOuterAngle":120,
+            "lightBrightness":0.08,
+            "lightRange":10,
+            "lightColor":{"r":255, "g":255, "b":0, "a":255},
+            "lightAttenuation":{"x":0, "y":1, "z":1},
+            "lightCastShadows":false,
+            "flareName":"vehicleBrakeLightFlare",
             "flareScale":0.05
-        }
-        ["signal_L"    , "SPOTLIGHT"        , "he3l", "he4l", "he1l", {"x":200, "y":0, "z":30} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.2, "z":0.04},"deformGroup":"headlightglass_L_break"}],
+        },
+        ["signal_L"    , "SPOTLIGHT"        , "he3l", "he4l", "he1l", {"x":200, "y":0, "z":30} , {"x":0, "y":0, "z":0}    , {"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":{"x":0.1, "y":0.2, "z":0.04},"deformGroup":"headlightglass_L_break"}]
      ],
     "nodes": [
          ["id", "posX", "posY", "posZ"],
@@ -322,7 +322,7 @@
          ["he4l", 0.78, -1.88, 0.68],
          //{"selfCollision":false}
          ["he5l", 0.60, -1.76, 0.72],
-         {"group":""},
+         {"group":""}
 
     ],
     "beams": [
@@ -384,7 +384,7 @@
           ["he5l","h4ll"],
           {"optional":false},
           {"beamPrecompression":1, "beamType":"|NORMAL", "beamLongBound":1.0, "beamShortBound":1.0},
-          {"deformLimitExpansion":1.1},
+          {"deformLimitExpansion":1.1}
     ],
     "triangles": [
             ["id1:","id2:","id3:"],
@@ -400,7 +400,7 @@
             ["he5l","he3l","he1l"],
             ["he5l","he4l","he3l"],
             {"triangleType":"NORMALTYPE"},
-            {"group":""},
-    ],
-},
+            {"group":""}
+    ]
+}
 }

@@ -71,6 +71,24 @@ local function determineOff(value,angle,abs, target, lOff, rOff)
   end
 end
 
+-- Returns relative object OBB
+local function getOBBRelative(pos, dir, vehObj)
+
+  local center = obj:getObjectCenterPosition(vehObj.id)
+
+  local dirVec, dirVecUp = obj:getObjectDirectionVector(vehObj.id), obj:getObjectDirectionVectorUp(vehObj.id)
+  local dirVecSide = vec3()
+
+  dirVecSide:setCross(dirVecUp, dirVec)
+  dirVecSide:normalize()
+  dirVecSide:setScaled(obj:getObjectInitialWidth(vehObj.id)*0.5)
+  dirVec:setScaled(obj:getObjectInitialLength(vehObj.id)*0.5)
+  dirVecUp:setScaled(obj:getObjectInitialHeight(vehObj.id)*0.5)
+
+  return dirVec, dirVecSide, dirVecUp
+end
+
+
 -- Returns whether a ray hits the intended object, or is blocked prematurely.
 local function rayIntersection(pos, dir, vehObj)
   local center = obj:getObjectCenterPosition(vehObj.id)
@@ -92,6 +110,8 @@ local function rayIntersection(pos, dir, vehObj)
 
   -- returns: min distance and max distance of the OBB, not whether or not we are actually hitting the object.
   local resultmin, resultmax = intersectsRay_OBB(pos, dir, center, dirVec, dirVecSide, dirVecUp)
+  --This is essentially pointless because we are aiming at the center, not a particular direction of travel - but we still 
+  --need the value for comparing the raylength to.
   
   --return math.min(rayLen, math.max(resultmin, 0)) -- ~= math.huge
 
@@ -139,10 +159,11 @@ local function updateGFX(dt)
 
   
   -- This should obviously be inside the if-statement to save on performance, but putting it here much improves the look of suddenly turning on the lights.
+  -- Set this way because we dont want the angle to be calculated when standing still, and -16 is good for the steering angle.
   targetValue = (steering * -16) * (math.clamp(math.log(math.min(wheelspeed, 50)) / fixedLog, 0, 100))
   hiTargetLeft = targetValue
   hiTargetRight = targetValue
-  carProcessed = false
+  local carProcessed = false
   objectArr = {}
   if lowhighbeam > 0 and electrics.values.ignitionLevel > 0 then
     if reverse == 0 then
@@ -213,18 +234,18 @@ local function updateGFX(dt)
 
         local frontpos = playerPos + (playerDir*(obj:getObjectInitialLength(objectId)*0.5))
 
-        
+        --Should include up vectors too. 
         if v.angle < 40 and v.angle > -40 and v.absAngle <= 40 and v.absAngle >=0 and rayIntersection(frontpos, v.targDir, v) then
           visCounter = visCounter + 1
           --Only process the closest vehicle, because I haven't come up with a way to prioritize targets yet.
           
 
-          if v == closest then           
+          if v == closest then
 
             if v.angle > -10 and v.angle < 15 and v == closest then
             
               hiTargetRight = v.angle
-              hiOffsetRight = 5
+              hiOffsetRight = 10
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetRight = v.angle
@@ -234,7 +255,7 @@ local function updateGFX(dt)
             if v.angle < 10 and v.angle > -15 and v == closest then
 
               hiTargetLeft = v.angle
-              hiOffsetLeft = 5
+              hiOffsetLeft = 10
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetLeft = v.angle
@@ -247,8 +268,8 @@ local function updateGFX(dt)
           end
           
           --Override to turn off lights when object is inside the cone (Not dynamic enough)
-        --leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 17, 14)
-        --rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 14, 17)
+        --leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 10, 8)
+        --rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 8, 10)
 
         end
 

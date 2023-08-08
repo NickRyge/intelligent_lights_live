@@ -72,21 +72,35 @@ local function determineOff(value,angle,abs, target, lOff, rOff)
 end
 
 -- Returns relative object OBB
-local function getOBBRelative(pos, dir, vehObj)
+local function getTargetRelativeAngleSize(pos, dir, vehObj)
 
   local center = obj:getObjectCenterPosition(vehObj.id)
+  local dirVec = obj:getObjectDirectionVector(vehObj.id)
+  local length = obj:getObjectInitialLength(vehObj.id)
 
-  local dirVec, dirVecUp = obj:getObjectDirectionVector(vehObj.id), obj:getObjectDirectionVectorUp(vehObj.id)
-  local dirVecSide = vec3()
+  dirVec:setScaled(length)
+  dirVec:normalize()
 
-  dirVecSide:setCross(dirVecUp, dirVec)
-  dirVecSide:normalize()
-  dirVecSide:setScaled(obj:getObjectInitialWidth(vehObj.id)*0.5)
-  dirVec:setScaled(obj:getObjectInitialLength(vehObj.id)*0.5)
-  dirVecUp:setScaled(obj:getObjectInitialHeight(vehObj.id)*0.5)
+  --Pythagoras, which I had to Google because I am getting so goddamn old
 
-  return dirVec, dirVecSide, dirVecUp
+  --c = distance
+  --a = car length (clamped with min of car width)
+  --B = angleRad
+
+  -- Calculate the vector from car 1 to car 2
+  local directionToTarget = vec3(pos.x - center.x, pos.y - center.y, pos.z - center.z) 
+
+  -- Calculate the angle between the direction vector and the vector from car 1 to car 2
+  local angle_relative = math.acos(dirVec:dot(directionToTarget) / directionToTarget:length())
+
+  local A = math.asin((length / math.sqrt(vehObj.distance)) * math.sin(math.clamp(0.523599, angle_relative, 2.61799)))
+  local A_deg = math.deg(A)
+
+  --print(A_deg)
+  return A_deg
+
 end
+
 
 
 -- Returns whether a ray hits the intended object, or is blocked prematurely.
@@ -180,7 +194,7 @@ local function updateGFX(dt)
         --objectId refers to the object this controller belongs to.
         if objId ~= objectId then
         
-          objPos = v.pos
+          objPos = obj:getObjectCenterPosition(objId)
           
           --Dont use maybe.
           --playerPos = mapmgr.objects[objectId].pos
@@ -194,7 +208,6 @@ local function updateGFX(dt)
             directionToTarget = vec3(objPos.x - playerPos.x, objPos.y - playerPos.y, objPos.z - playerPos.z)
             directionToTarget:normalize()
 
-            --This should be self-explainatory
             crossproduct = directionToTarget:cross(playerDir)
             dotproduct = directionToTarget:dot(playerDir)
 
@@ -241,11 +254,13 @@ local function updateGFX(dt)
           
 
           if v == closest then
+            
+            local targetRelativeOffset = (getTargetRelativeAngleSize(playerPos, "dir", v)*fixedLog)+10
 
             if v.angle > -10 and v.angle < 15 and v == closest then
             
               hiTargetRight = v.angle
-              hiOffsetRight = 10
+              hiOffsetRight = targetRelativeOffset
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetRight = v.angle
@@ -255,7 +270,7 @@ local function updateGFX(dt)
             if v.angle < 10 and v.angle > -15 and v == closest then
 
               hiTargetLeft = v.angle
-              hiOffsetLeft = 10
+              hiOffsetLeft = targetRelativeOffset
               hiOffsetDirectional = 15
               --override value to follow the blinded car
               hiTargetLeft = v.angle

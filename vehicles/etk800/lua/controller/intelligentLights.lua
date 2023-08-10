@@ -170,6 +170,7 @@ local function updateGFX(dt)
   local overrideLeft = -1
   local overrideRight = -1
   local objectArr = {}
+  local targetRelativeOffset = 0
 
   
   -- This should obviously be inside the if-statement to save on performance, but putting it here much improves the look of suddenly turning on the lights.
@@ -255,7 +256,7 @@ local function updateGFX(dt)
 
           if v == closest then
             
-            local targetRelativeOffset = (getTargetRelativeAngleSize(playerPos, "dir", v)*fixedLog)+10
+            targetRelativeOffset = (getTargetRelativeAngleSize(playerPos, "dir", v)*fixedLog)+10
 
             if v.angle > -10 and v.angle < 15 and v == closest then
             
@@ -280,11 +281,15 @@ local function updateGFX(dt)
             carProcessed = true
             currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, overrideLeft)
             currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, overrideRight)
+          else
+            --Is this neccessary?
+            targetRelativeOffset = 0 
           end
           
+        
           --Override to turn off lights when object is inside the cone (Not dynamic enough)
-        --leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 10, 8)
-        --rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 8, 10)
+        leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 12, 10)
+        rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 10, 12)
 
         end
 

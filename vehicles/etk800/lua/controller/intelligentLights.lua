@@ -30,9 +30,6 @@ local currentValueHighRight = 0
 function math.clamp(low, n, high) return math.min(math.max(n, low), high) end
 
 
-
-
-
 -- returns distance between player and target
 -- - Includes square root so is computationally heavy. Use getSquaredDistance.
 local function getDistance(player, target)
@@ -115,7 +112,6 @@ local function getTargetRelativeAngleSize(pos, dir, vehObj)
 end
 
 
-
 -- Returns whether a ray hits the intended object, or is blocked prematurely.
 local function rayIntersection(pos, dir, vehObj)
   local center = obj:getObjectCenterPosition(vehObj.id)
@@ -155,10 +151,15 @@ local function rayIntersection(pos, dir, vehObj)
 end
 
 
+-- Populates an array of all the vehicles which are to be considered for processing by the headlights. 
+-- Returns:
+-- - car array  
+-- - playerdir  
+-- - playerpos
 local function populateVehicles()
   local carArray = {}
   local playerDir
-  local playerPos
+  local playerPos = obj:getObjectCenterPosition(objectId)
   
   
   for objId, v in pairs(mapmgr.getObjects()) do
@@ -167,7 +168,7 @@ local function populateVehicles()
     if objId ~= objectId then
     
       playerDir = mapmgr.objects[objectId].dirVec 
-      playerPos = obj:getObjectCenterPosition(objectId)
+
 
       local objPos = obj:getObjectCenterPosition(objId)
       
@@ -189,8 +190,7 @@ local function populateVehicles()
         local angle = (math.deg(math.asin(crossproduct.z))+0.5)*-1
         local absAngle = math.deg(math.acos(dotproduct))
 
-
-        if angle < 40 and angle > -40 and absAngle <= 40 and absAngle >=-40 then            
+        if angle < 40 and angle > -40 and absAngle <= 40 and absAngle >=-40 then
 
           --Add angle to the vehicle's table
           v.angle = angle
@@ -199,14 +199,13 @@ local function populateVehicles()
           v.distance = distance
           v.targDir = directionToTarget
           carArray[v] = distance
-
         end
       end
     end
-    
   end
   return carArray, playerDir, playerPos
 end
+
 
 local function updateGFX(dt)
   local lowbeam = electrics.values.lowbeam

@@ -1,0 +1,3 @@
+{
+"headlights_intelligence":{"order":  1,  "onUp":"electrics.values.intelligence = (electrics.values.intelligence + 1)%3\ngui.message(\"Intelligence = \".. electrics.values.intelligence, 2, \"nil\", \"flag\")", "title": "intelligence toggle", "desc": "Enables and disables the intelligence feature" }
+}

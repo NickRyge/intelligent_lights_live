@@ -255,106 +255,109 @@ local function updateGFX(dt)
   local carProcessed = false
   objectArr = {}
 
-  --This whole section is an absolutely horrible mess. It's the result of tons of small additions over time, and I've accidentally made unmaintainable code.
-  --I had no idea where I was really going with this, or what was even possible when I started. 
+  -- The following section is *still* a mess, but it's far better than it was.
 
-  -- It has to be rewritten and optimized properly, but that is a worry for tomorrow.
+  -- Processing the lights
   if lowhighbeam > 0 and electrics.values.ignitionLevel > 0 then
 
-    if highbeam > 0  then
-      offset = 12.5
-      
+    if electrics.values.intelligence > 0 then
+        if reverse == 0 then targetValue = (steering * -16) * (math.clamp(math.log(math.min(wheelspeed, 50)) / fixedLog, 0, 100)) else targetValue = 0 end
 
-      if electrics.values.intelligence == 2 then
-        objectArr, playerDir, playerPos = populateVehicles()
+        -- Handle intelligent lighting in here
 
-        --determine closest
-        local closest = determineNearest(objectArr)
+        -- If highbeams are on, react to them - These influence the mode of the lowbeams.
+        -- should lights have a "mode" attribute?
 
-        for v, distance in pairs(objectArr) do
-
-          local frontpos = playerPos + (playerDir*(obj:getObjectInitialLength(objectId)*0.5))
-
-          --Should include up vectors too. 
-          if v.angle < 40 and v.angle > -40 and v.absAngle <= 40 and v.absAngle >=0 and rayIntersection(frontpos, v.targDir, v) then
-            visCounter = visCounter + 1
-            --Only process the closest vehicle, because I haven't come up with a way to prioritize targets yet.
-
-            if v == closest then
-              
-              targetRelativeOffset = (getTargetRelativeAngleSize(playerPos, "dir", v)*fixedLog)+10
-
-              if v.angle > -10 and v.angle < 15 and v == closest then
-              
-                hiTargetRight = v.angle
-                hiOffsetRight = targetRelativeOffset
-                hiOffsetDirectional = 15
-                --override value to follow the blinded car
-                hiTargetRight = v.angle
-                hiSmoothR = 30
-              end
-
-              if v.angle < 10 and v.angle > -15 and v == closest then
-
-                hiTargetLeft = v.angle
-                hiOffsetLeft = targetRelativeOffset
-                hiOffsetDirectional = 15
-                --override value to follow the blinded car
-                hiTargetLeft = v.angle
-                hiSmoothL = 30
-              end
-              --Override headlights
-              carProcessed = true
-              currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, overrideLeft)
-              currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, overrideRight)
-            else
-              --Is this neccessary?
-              targetRelativeOffset = 0 
-            end
+        if electrics.values.intelligence == 2 then
             
-          
-            --Override to turn off lights when object is inside the cone (Not dynamic enough)
-          leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 12, 10)
-          rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 10, 12)
+            -- Populate and determine target
+            objectArr, playerDir, playerPos = populateVehicles()
+            local closest = determineNearest(objectArr)
 
-          end
-          counter = counter + 1
+            for v, distance in pairs(objectArr) do
 
-        end 
-      end
-
-      --If the headlights aren't overridden, just use them normally
-      if not carProcessed then
-        currentValueHighLeft = takeStep(hiTargetLeft, leftHigh, dt, currentValueHighLeft, -15, 15, hiSmoothL, overrideLeft)
-        currentValueHighRight = takeStep(hiTargetRight, rightHigh, dt, currentValueHighRight, -15, 15, hiSmoothR, overrideRight)
-      end
-      if leftOff > 0 then
-        electrics.values[leftHigh] = 0
-      end
-      if rightOff > 0 then
-        electrics.values[rightHigh] = 0
-      end
-
-      print("Cars processed: " .. counter .." - of which visible: " .. visCounter )
-    
-    elseif highbeam > 0 then
-      offset = 0
-      electrics.values[leftHigh] = 0
-      electrics.values[rightHigh] = 0
-
-      --This is only possible because the lights are already on.
-      --It keeps the highbeams in the place they would otherwise be, so that when flashing them, it doesn't fly around the screen.
-      currentValueHighLeft = targetValue
-      currentValueHighRight = targetValue
+                local frontpos = playerPos + (playerDir*(obj:getObjectInitialLength(objectId)*0.5))
+      
+                --Should include up vectors too. 
+                if v.angle < 40 and v.angle > -40 and v.absAngle <= 40 and v.absAngle >=0 and rayIntersection(frontpos, v.targDir, v) then
+                  visCounter = visCounter + 1
+                  --Only process the closest vehicle, because I haven't come up with a way to prioritize targets yet.
+      
+                  if v == closest then
+                    
+                    targetRelativeOffset = (getTargetRelativeAngleSize(playerPos, "dir", v)*fixedLog)+10
+      
+                    if v.angle > -10 and v.angle < 15 and v == closest then
+                    
+                      hiTargetRight = v.angle
+                      hiOffsetRight = targetRelativeOffset
+                      hiOffsetDirectional = 15
+                      --override value to follow the blinded car
+                      hiTargetRight = v.angle
+                      hiSmoothR = 30
+                    end
+      
+                    if v.angle < 10 and v.angle > -15 and v == closest then
+      
+                      hiTargetLeft = v.angle
+                      hiOffsetLeft = targetRelativeOffset
+                      hiOffsetDirectional = 15
+                      --override value to follow the blinded car
+                      hiTargetLeft = v.angle
+                      hiSmoothL = 30
+                    end
+                    carProcessed = true
+                  else
+                    --Is this neccessary?
+                    targetRelativeOffset = 0 
+                  end
+                              
+                --Override to turn off lights when object is inside the cone (Not dynamic enough)
+                leftOff = leftOff + determineOff(currentValueHighLeft, v.angle, v.absAngle, leftHigh, 12, 10)
+                rightOff = rightOff + determineOff(currentValueHighRight, v.angle, v.absAngle, rightHigh, 10, 12)
+      
+                end
+                counter = counter + 1
+            end 
+            print("Cars processed: " .. counter .." - of which visible: " .. visCounter )
+        else
+            -- if only 1 intelligence
+            hiTargetLeft, hiTargetRight = targetValue,targetValue
+            hiOffsetLeft, hiOffsetRight = 0, 0
+        end
+    else
+        -- Uninentelligent lighting here. 
+        -- Ideally the lowbeams should still move whenever the highbeamns are turned on.
+        -- The highbeams should just be a fixed value.
+        targetValue = 0
+        hiTargetLeft, hiTargetRight = targetValue,targetValue
+        hiOffsetLeft, hiOffsetRight = 0, 0
     end
-    -- Static  clamps for now
 
+    if highbeam > 0 then
+
+        currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, overrideLeft)
+        currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, overrideRight)
+        
+        -- suboptimal, wastes resources.
+        if leftOff > 0 then
+            electrics.values[leftHigh] = 0
+        end
+        
+        if rightOff > 0 then
+            electrics.values[rightHigh] = 0
+        end
+    end
+
+    -- Dumb fix
     offset = (highbeam*12.5)
     currentValueLeft = takeStep(targetValue + offset, left, dt, currentValueLeft, -20 + (offset * 2), 20, 8, -1)
     currentValueRight = takeStep(targetValue - offset, right, dt, currentValueRight, -20, 20 - (offset * 2), 8, -1)
-  else 
-    reset()
 
+  else 
+
+    -- Keep the lights "ready" by assigning them the targetvalue
+    reset()
     currentValueLeft = targetValue
     currentValueRight = targetValue
   end

@@ -206,6 +206,21 @@ local function populateVehicles()
   return carArray, playerDir, playerPos
 end
 
+-- This function determines the nearest vehicle, this is how we select which one to target
+-- Not ideal, should instead target based on more information.
+local function determineNearest(objectArray)
+        --Determining the closest vehicle
+        local min = math.huge
+        local nearest = nil
+        for i, v in pairs(objectArray) do
+          if min > math.min(min, v) then
+            min = math.min(min, v)
+            nearest = i
+          end
+        end
+  return nearest
+end
+
 
 local function updateGFX(dt)
   local lowbeam = electrics.values.lowbeam
@@ -240,8 +255,6 @@ local function updateGFX(dt)
   local carProcessed = false
   objectArr = {}
 
-
-
   --This whole section is an absolutely horrible mess. It's the result of tons of small additions over time, and I've accidentally made unmaintainable code.
   --I had no idea where I was really going with this, or what was even possible when I started. 
 
@@ -255,15 +268,8 @@ local function updateGFX(dt)
       if electrics.values.intelligence == 2 then
         objectArr, playerDir, playerPos = populateVehicles()
 
-        --Determining the closest vehicle
-        local min = math.huge
-        local closest = nil
-        for i, v in pairs(objectArr) do
-          if min > math.min(min, v) then
-            min = math.min(min, v)
-            closest = i
-          end
-        end
+        --determine closest
+        local closest = determineNearest(objectArr)
 
         for v, distance in pairs(objectArr) do
 
@@ -342,6 +348,8 @@ local function updateGFX(dt)
       currentValueHighRight = targetValue
     end
     -- Static  clamps for now
+
+    offset = (highbeam*12.5)
     currentValueLeft = takeStep(targetValue + offset, left, dt, currentValueLeft, -20 + (offset * 2), 20, 8, -1)
     currentValueRight = takeStep(targetValue - offset, right, dt, currentValueRight, -20, 20 - (offset * 2), 8, -1)
   else 
@@ -363,7 +371,7 @@ local function init(jbeamData)
   rightHigh = "rightHigh"
 
   highbeams = "beams"
-  electrics.values.intelligence = 0
+  electrics.values.intelligence = 2
 
   reset()
 

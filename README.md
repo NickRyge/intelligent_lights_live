@@ -6,8 +6,7 @@ The in-game default headlight flares and cookies are not particularly impressive
 
 This mod adds intelligent headlights to the ETK800 series of vehicles.
 
-Disclaimer:
 
-This mod currently is not finished. It likely will not be finished, but I enjoy working on it. The reason it wont be finished is because it requires a lot of performance to run this mod, and the fact that it has a lot of bugs. Compared to a lot of the mods on the repository, this is extremely complex, and as such is prone to a lot more issues. Furthermore, it is hinted by the developers that the next update, 0.30, will implement Vulkan by default, which is going to create far more bugs than the mod already has, and as such I am waiting it out to see whether or not we are going to actually be able to implement this. 
 
-The mod is being developed in Vulkan currently, as a precursor to the Vulkan implementation, and lets be honest - It hardly works as it is. It is a gorgeous concept, but I've grown tired of it myself and am only coding this for the challenge. The end result is likely not ever going to be very pretty.
+https://github.com/NickRyge/intelligent_lights_live/assets/42750308/d1f3e98f-b214-44ed-9e9f-a1639ca26134
+

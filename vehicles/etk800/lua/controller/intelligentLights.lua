@@ -347,6 +347,10 @@ local function updateGFX(dt)
         if rightOff > 0 then
             electrics.values[rightHigh] = 0
         end
+      else
+        -- Make sure highbeams are always targeted even when off.                                                                                              --Override value is 0
+        currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 0)
+        currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 0)
     end
 
     -- Dumb fix

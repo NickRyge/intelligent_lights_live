@@ -12,7 +12,7 @@ local function reset()
   electrics.values[left] = 0
   electrics.values[right] = 0
   electrics.values[leftHigh] = 0
-  electrics.values[rightHigh] = 0
+  electrics.values[rightHigh] = 0  
 end 
 
 
@@ -221,8 +221,36 @@ local function determineNearest(objectArray)
   return nearest
 end
 
+local function figure(counter, dt, multiplier,speed)
 
+  if counter > 10 then
+    multiplier = -1
+  elseif counter < 0 then
+    multiplier = 1
+  end
+  counter = counter + (dt * multiplier * speed)
+
+  return counter, multiplier
+end
+
+
+local x = 0
+local y = 5
+local y1 = -1
+local x1 = 1
 local function updateGFX(dt)
+  --
+
+  x, x1 = figure(x, dt, x1, 4.9)
+  print(x)
+  y, y1 = figure (y, dt, y1, 15)
+  print(y)
+
+  obj:propUpdate(placeholders.left.ez, 0, 0, 0, math.rad(x), 0, math.rad(y), false, 1, 1)
+
+  --placeholders.left.disabled = false
+  --print(placeholders.left.dataValue)
+
   local lowbeam = electrics.values.lowbeam
   local highbeam = electrics.values.highbeam
   local lowhighbeam = electrics.values.lowhighbeam
@@ -380,6 +408,31 @@ local function init(jbeamData)
   highbeams = "beams"
   electrics.values.intelligence = 2
 
+
+  local props = v.data.props
+  placeholders = {}
+
+  for _,v in pairs(props) do
+    if v.func == "leftHighPH" then
+      placeholders.left = v
+      placeholders.left.ez = placeholders.left.pid
+      placeholders.left.pid = nil
+    elseif v.func == "rightHighPH" then
+
+      placeholders.right = v
+
+    end
+
+  end
+  
+  print(placeholders.left.func)
+  print(placeholders.right.func)
+
+  pt = placeholders.left.translation
+  pr = placeholders.left.rotation
+
+
+  
   reset()
 
 end

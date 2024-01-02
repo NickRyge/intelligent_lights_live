@@ -59,7 +59,7 @@
             "shadowSoftness":0.5
         },
         //high beams
-        ["rightHigh" ,         "SPOTLIGHT"        , "he4r", "he3r", "he2r", 
+        ["rightHighPH" ,         "SPOTLIGHT"        , "he4r", "he3r", "he2r", 
 		{"x":159.2, "y":187, "z":-36} , 
 		{"x":0, "y":0, "z":1}    , 
 		{"x":0, "y":0, "z":0}, -360, 360, 360, 1, {"baseTranslation":
@@ -263,12 +263,13 @@
             "shadowSoftness":0.5
         },
         //high beams
-        ["leftHigh" ,         "SPOTLIGHT"        , "he4l", "he3l", "he2l", 
+        ["leftHighPH" ,         "SPOTLIGHT"        , "he4l", "he3l", "he2l", 
 		{"x":-19.85, "y":6, "z":-35} , 
-		{"x":0, "y":0, "z":1}    , 
-		{"x":0, "y":0, "z":0}, -360, 360, 0, 1, {"baseTranslation":
-		{"x":0.0, "y":0.48, "z":-0.055},
-		"deformGroup":"headlightglass_L_break"}],
+		{"x":0, "y":0, "z":0}    , 
+		{"x":0, "y":0, "z":0}, 0, 0, 0, 1, {"baseTranslation":
+		{"x":0.0, "y":0.48, "z":-0.055}
+        //,"deformGroup":"headlightglass_L_break"
+        }],
 
         //Testing sidelights
         {

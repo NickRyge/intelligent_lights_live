@@ -6,6 +6,8 @@
 local M = {}
 M.type = "auxiliary"
 
+-- Import test controller 
+require "controller.test"
 
 
 local function reset()
@@ -24,6 +26,8 @@ local currentValueLeft = 0
 local currentValueRight = 0
 local currentValueHighLeft = 0
 local currentValueHighRight = 0
+
+local leftHighProp = nil
 
 
 -- clamp function to make my life easier at the expense of your framerate
@@ -240,13 +244,11 @@ local y1 = -1
 local x1 = 1
 local function updateGFX(dt)
   --
-
+  
   x, x1 = figure(x, dt, x1, 4.9)
-  print(x)
   y, y1 = figure (y, dt, y1, 15)
-  print(y)
 
-  obj:propUpdate(placeholders.left.ez, 0, 0, 0, math.rad(x), 0, math.rad(y), false, 1, 1)
+  UpdateProp(leftHighProp.id, 0, 0, 0, math.rad(x), 0, math.rad(y), false, 1, 1)
 
   --placeholders.left.disabled = false
   --print(placeholders.left.dataValue)
@@ -265,6 +267,8 @@ local function updateGFX(dt)
   local hiOffsetDirectional = 0
   local offset = 0
   
+  
+
   local playerPos = 0
   local playerDir = 0
   local hiSmoothR, hiSmoothL = 8, 8
@@ -389,6 +393,7 @@ local function updateGFX(dt)
   else 
 
     -- Keep the lights "ready" by assigning them the targetvalue
+    -- TODO: Im a dumbass - This doesn't work because it doesn't take the minimum and maximum values into account. Fix pls.
     reset()
     currentValueLeft = targetValue
     currentValueRight = targetValue
@@ -408,28 +413,11 @@ local function init(jbeamData)
   highbeams = "beams"
   electrics.values.intelligence = 2
 
+  SetPropsList(v.data.props)
+  leftHighProp = HijackSingleProp("leftHighPH", "leftHigh")
 
-  local props = v.data.props
-  placeholders = {}
-
-  for _,v in pairs(props) do
-    if v.func == "leftHighPH" then
-      placeholders.left = v
-      placeholders.left.ez = placeholders.left.pid
-      placeholders.left.pid = nil
-    elseif v.func == "rightHighPH" then
-
-      placeholders.right = v
-
-    end
-
-  end
-  
-  print(placeholders.left.func)
-  print(placeholders.right.func)
-
-  pt = placeholders.left.translation
-  pr = placeholders.left.rotation
+  --pt = placeholders.left.translation
+  --pr = placeholders.left.rotation
 
 
   

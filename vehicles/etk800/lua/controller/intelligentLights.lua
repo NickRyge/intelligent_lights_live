@@ -23,22 +23,28 @@ local fixedLog = math.log(1.5)
 
 
 local currentValueLeft = 0
+local currentValueLeftPitch = 0
 local currentValueRight = 0
+local currentValueRightPitch = 0
+
 local currentValueHighLeft = 0
 local currentValueHighRight = 0
 
+
+local leftProp = nil
+
+local rightProp = nil
+
 local leftHighProp = nil
+-- The right light highbeam prop variable.
+local rightHighProp = nil
+
 
 
 -- clamp function to make my life easier at the expense of your framerate
 function math.clamp(low, n, high) return math.min(math.max(n, low), high) end
 
 
--- returns distance between player and target
--- - Includes square root so is computationally heavy. Use getSquaredDistance.
-local function getDistance(player, target)
-  return math.sqrt((target.x - player.x)^2 + (target.y - player.y)^2 + (target.z - player.z)^2)
-end 
 
 -- Identical to getDistance, only squared.
 -- Far less computationally heavy.
@@ -51,27 +57,24 @@ end
 
 
 --Makes the light smoothly walk along the steering angle instead of snapping around.
-local function takeStep(targetValue, target, dt, currentValue, clampMin, clampMax, smoothness, override)
+local function takeStep(targetValueYaw, targetValuePitch, target, dt, currentValueYaw, currentValuePitch, clampMin, clampMax, smoothness, value)
 
-  if override ~= -1 then
-    electrics.values[target] = override
-    return targetValue
+  if -1 ~= -1 then
+    --electrics.values[target] = override
+    return targetValueYaw
   else
 
     --Clamp the targetValue according to the min and max which allows for an offset to occur.
-    local step = (math.clamp(targetValue, clampMin, clampMax) - currentValue) * dt * smoothness --5.2
-
+    local step = (math.clamp(targetValueYaw, clampMin, clampMax) - currentValueYaw) * dt * smoothness --5.2
+    local stepPitch = (targetValuePitch - currentValuePitch) * dt * smoothness --5.2
     --local newValue = math.clamp(currentValue + step, clampMin, clampMax)
     --Testing if I can rely only on clamping the target value
-    local newValue = currentValue+step
+    local newValueYaw = currentValueYaw + step
+    local newValuePitch = currentValuePitch + stepPitch
 
-    --prevent the lights from turning off at 0 or very low values
-    if newValue%360 < 0.01 and newValue%360 > -0.01 then
-      electrics.values[target] = 0.01
-    else
-      electrics.values[target] = newValue % 360
-    end
-    return newValue
+    UpdateProp(target.id, 0, 0, 0, math.rad(newValuePitch), 0, math.rad(newValueYaw), false, value, 1)
+
+    return newValueYaw, newValuePitch
   end
 end
 
@@ -246,10 +249,7 @@ local function updateGFX(dt)
   --
   
   x, x1 = figure(x, dt, x1, 4.9)
-  y, y1 = figure (y, dt, y1, 15)
-
-  UpdateProp(leftHighProp.id, 0, 0, 0, math.rad(x), 0, math.rad(y), false, 1, 1)
-
+  --y, y1 = figure (y, dt, y1, 15)
   --placeholders.left.disabled = false
   --print(placeholders.left.dataValue)
 
@@ -351,7 +351,7 @@ local function updateGFX(dt)
                 end
                 counter = counter + 1
             end 
-            print("Cars processed: " .. counter .." - of which visible: " .. visCounter )
+            --print("Cars processed: " .. counter .." - of which visible: " .. visCounter )
         else
             -- if only 1 intelligence
             hiTargetLeft, hiTargetRight = targetValue,targetValue
@@ -368,27 +368,28 @@ local function updateGFX(dt)
 
     if highbeam > 0 then
 
-        currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, overrideLeft)
-        currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, overrideRight)
+        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 1-leftOff)
+        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 1-rightOff)
         
+        -- Why in the hell have i done that?
         -- suboptimal, wastes resources.
-        if leftOff > 0 then
-            electrics.values[leftHigh] = 0
-        end
-        
-        if rightOff > 0 then
-            electrics.values[rightHigh] = 0
-        end
-      else
+        --if leftOff > 0 then
+        --    electrics.values[leftHigh] = 0
+        --end
+        --
+        --if rightOff > 0 then
+        --    electrics.values[rightHigh] = 0
+        --end
+    else
         -- Make sure highbeams are always targeted even when off.                                                                                              --Override value is 0
-        currentValueHighLeft = takeStep(hiTargetLeft + hiOffsetLeft, leftHigh, dt, currentValueHighLeft, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 0)
-        currentValueHighRight = takeStep(hiTargetRight - hiOffsetRight, rightHigh, dt, currentValueHighRight, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 0)
+        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 0)
+        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 0)
     end
 
     -- Dumb fix
     offset = (highbeam*12.5)
-    currentValueLeft = takeStep(targetValue + offset, left, dt, currentValueLeft, -20 + (offset * 2), 20, 8, -1)
-    currentValueRight = takeStep(targetValue - offset, right, dt, currentValueRight, -20, 20 - (offset * 2), 8, -1)
+    currentValueLeft, currentValueLeftPitch = takeStep(targetValue + offset, highbeam*5, leftProp, dt, currentValueLeft, currentValueLeftPitch, -20 + (offset * 2), 20, 8, lowhighbeam)
+    currentValueRight, currentValueRightPitch = takeStep(targetValue - offset, highbeam*5, rightProp, dt, currentValueRight, currentValueRightPitch, -20, 20 - (offset * 2), 8, lowhighbeam)
 
   else 
 
@@ -414,7 +415,10 @@ local function init(jbeamData)
   electrics.values.intelligence = 2
 
   SetPropsList(v.data.props)
-  leftHighProp = HijackSingleProp("leftHighPH", "leftHigh")
+  leftProp = HijackSingleProp(left, "left")
+  leftHighProp = HijackSingleProp("leftHigh", "leftHigh")
+  rightProp = HijackSingleProp(right, "right")
+  rightHighProp = HijackSingleProp("rightHigh", "rightHigh")
 
   --pt = placeholders.left.translation
   --pr = placeholders.left.rotation

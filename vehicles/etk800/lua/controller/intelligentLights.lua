@@ -57,7 +57,7 @@ end
 
 
 --Makes the light smoothly walk along the steering angle instead of snapping around.
-local function takeStep(targetValueYaw, targetValuePitch, target, dt, currentValueYaw, currentValuePitch, clampMin, clampMax, smoothness, value)
+local function takeStep(targetValueYaw, targetValuePitch, target, dt, currentValueYaw, currentValuePitch, clampMin, clampMax, smoothness, smoothnessPitch, value)
 
   if -1 ~= -1 then
     --electrics.values[target] = override
@@ -66,7 +66,7 @@ local function takeStep(targetValueYaw, targetValuePitch, target, dt, currentVal
 
     --Clamp the targetValue according to the min and max which allows for an offset to occur.
     local step = (math.clamp(targetValueYaw, clampMin, clampMax) - currentValueYaw) * dt * smoothness --5.2
-    local stepPitch = (targetValuePitch - currentValuePitch) * dt * smoothness --5.2
+    local stepPitch = (targetValuePitch - currentValuePitch) * dt * smoothnessPitch --5.2
     --local newValue = math.clamp(currentValue + step, clampMin, clampMax)
     --Testing if I can rely only on clamping the target value
     local newValueYaw = currentValueYaw + step
@@ -277,6 +277,7 @@ local function updateGFX(dt)
   local objectArr = {}
   local targetRelativeOffset = 0
   local leftOff, rightOff, counter, visCounter  = 0,0,0,0
+  local verticalTarget = 0
 
   
   -- This should obviously be inside the if-statement to save on performance, but putting it here much improves the look of suddenly turning on the lights.
@@ -368,8 +369,8 @@ local function updateGFX(dt)
 
     if highbeam > 0 then
 
-        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 1-leftOff)
-        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 1-rightOff)
+        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 15, 1-leftOff)
+        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 15, 1-rightOff)
         
         -- Why in the hell have i done that?
         -- suboptimal, wastes resources.
@@ -382,22 +383,36 @@ local function updateGFX(dt)
         --end
     else
         -- Make sure highbeams are always targeted even when off.                                                                                              --Override value is 0
-        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 0)
-        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 0)
+        currentValueHighLeft, _ = takeStep(hiTargetLeft + hiOffsetLeft, 0, leftHighProp, dt, currentValueHighLeft, 0, -15+hiOffsetDirectional, 15+hiOffsetDirectional, hiSmoothL, 15, 0)
+        currentValueHighRight, _ = takeStep(hiTargetRight - hiOffsetRight, 0, rightHighProp, dt, currentValueHighRight, 0, -15-hiOffsetDirectional, 15-hiOffsetDirectional, hiSmoothR, 15, 0)
     end
 
     -- Dumb fix
     offset = (highbeam*12.5)
-    currentValueLeft, currentValueLeftPitch = takeStep(targetValue + offset, highbeam*5, leftProp, dt, currentValueLeft, currentValueLeftPitch, -20 + (offset * 2), 20, 8, lowhighbeam)
-    currentValueRight, currentValueRightPitch = takeStep(targetValue - offset, highbeam*5, rightProp, dt, currentValueRight, currentValueRightPitch, -20, 20 - (offset * 2), 8, lowhighbeam)
+    local pitchUp = 3
+    if(carProcessed or highbeam == 0) then 
+      pitchUp = 0
+    end
+    currentValueLeft, currentValueLeftPitch = takeStep(targetValue + offset, pitchUp, leftProp, dt, currentValueLeft, currentValueLeftPitch, -20 + (offset * 2), 20, 8, 12, lowhighbeam)
+    currentValueRight, currentValueRightPitch = takeStep(targetValue - offset, pitchUp, rightProp, dt, currentValueRight, currentValueRightPitch, -20, 20 - (offset * 2), 8, 12, lowhighbeam)
 
   else 
 
     -- Keep the lights "ready" by assigning them the targetvalue
-    -- TODO: Im a dumbass - This doesn't work because it doesn't take the minimum and maximum values into account. Fix pls.
+    -- TODO: Im a dumbass - This doesn't work because it doesn't take the minimum and maximum values into account. Fix pls. 
+    -- edit - cant you just clamp the values..?
     reset()
     currentValueLeft = targetValue
     currentValueRight = targetValue
+    currentValueLeftPitch = verticalTarget
+    currentValueRightPitch = verticalTarget
+
+    local tempproplist = GetHijackedProps()
+
+    for _, prop in pairs(tempproplist) do
+        UpdateProp(prop.id, 0, 0, 0, 0, 0, 0, false, 0, 1)
+    end
+
   end
 end
 

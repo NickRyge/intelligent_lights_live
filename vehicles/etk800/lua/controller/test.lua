@@ -23,9 +23,6 @@ function SetPropsList(propsList)
     props = propsList
 end
 
-function Test(inputText)
-    print(inputText)
-end
 
 -- Returns list of hijacked props
 function GetHijackedProps()
@@ -50,6 +47,35 @@ function HijackSingleProp(propFunction, name)
     print("Hijacked " .. hijackedProps[name].func)
     return hijackedProps[name]
 end
+
+
+---Unhijacks a prop, allowing the game to update it automatically again.
+---@param propId number The hijacked prop id.
+---@return prop|nil
+function UnhijackSingleProp(propId)
+    local hijackedKey = nil
+    local prop = nil
+
+    for k, v in pairs(hijackedProps) do
+        if v.id == propId then
+            hijackedKey = k
+            prop = v
+            break
+        end
+    end
+
+    if not prop then
+        print("Could not unhijack prop with id " .. tostring(propId) .. " - not found")
+        return nil
+    end
+
+    prop.pid = prop.id
+    prop.id = nil
+    hijackedProps[hijackedKey] = nil
+
+    print("Unhijacked prop with pid " .. tostring(prop.pid))
+end
+
 
 -- Always leave the multiplier at 1 for best results. It's far easier to manage that way as it is possible to manage rotation (and movement) entirely
 -- by just converting degrees to radians, as that's what the rotation multipliers use. So math.rad(180) for rotXMult will turn the prop 180 degrees around x.
